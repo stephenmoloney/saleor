@@ -1,29 +1,16 @@
 ---
 env:
   global:
-    - HADOLINT=${HOME}/hadolint
-    - HADOLINT_VERSION=1.11.1
-    - HADOLINT_URL=https://github.com/hadolint/hadolint/releases/download
     - DJANGO_SETTINGS_MODULE=tests.settings
     - DATABASE_URL='postgres://postgres@localhost:5432/saleor'
 
 stages:
-  - lint
   - Python 3.5 tests
   - Python 3.6 tests
   - Python 3.7 tests
 
 jobs:
   include:
-    - stage: Dockerfile Lint
-      name: Dockerfile Lint
-      language: bash
-      install:
-        - curl -sL "${HADOLINT_URL}/v${HADOLINT_VERSION}/hadolint-$(uname -s)-$(uname -m)" -o ${HADOLINT}
-        - chmod +x ${HADOLINT}
-      script:
-        - ${HADOLINT} ./Dockerfile
-
     #  +-----------+-----------+
     #  | Python    | Django    |
     #  +-----------+-----------+
