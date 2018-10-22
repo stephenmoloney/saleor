@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saleor-nginx-template
+  namespace: {{ .Release.Namespace }}
+data:
+  nginx.conf: |
+    daemon off;
+    user nginx;
+    worker_processes  {{ .Values.nginx.workerProcesses }};
+    pid /var/run/nginx.pid;
+    events {
+        worker_connections  1024;
+    }
+    upstream django {
+        server {{ .Release.Name }}-django.{{ .Release.Namespace }}:{{ .Values.service.port }};
+    }
+{{- range .Values.ingress.hosts }}
+    server {
+        listen      {{ .Values.service.port }};
+        server_name {{ . }};
+        charset     utf-8;
+        sendfile     on;
+        client_max_body_size 100M;
+        gzip on;
+        gzip_static on;
+        gzip_types
+          text/css
+          text/javascript
+          text/xml
+          application/javascript
+          font/truetype
+          font/opentype
+          application/vnd.ms-fontobject
+          image/svg+xml;
+        access_log off;
+
+        location {{ .Values.django.mediaUrl }}  {
+            alias /app/media;
+            expires 30d;
+        }
+        location {{ .Values.django.staticUrl }} {
+            alias /app/static;
+            expires 1d;
+        }
+    }
+{{- end }}
+

@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
@@ -31,7 +32,7 @@ spec:
           {{- else }}
             name: {{ .Values.django.alternativeConfigMap }}
           {{- end }}
-        - name: saleor-data
+        - name: saleor-data-media
         # TODO Introduce another conditional for when one is using S3 based storage
         {{- if and (eq .Values.persistence.enabled true) (.Values.persistence.existingClaim) }}
           persistentVolumeClaim:
@@ -50,7 +51,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["chown", "-R", "saleor:saleor", "/app/media"]
           volumeMounts:
-            - name: saleor-data
+            - name: saleor-data-media
               mountPath: /app/media
           securityContext:
             runAsUser: 0
@@ -66,19 +67,19 @@ spec:
 #          livenessProbe:
 #            httpGet:
 #              path: /health/
-#              port: 8000
+#              port: http
 #{{ toYaml .Values.livenessProbeSettings | indent 10 }}
 #          readinessProbe:
 #            httpGet:
 #              path: /health/
-#              port: 8000
+#              port: http
 #{{ toYaml .Values.readinessProbeSettings | indent 10 }}
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
           volumeMounts:
             # TODO Introduce a conditional for /app/media when one is using S3 based storage
-            - name: saleor-data
+            - name: saleor-data-media
               mountPath: /app/media
             - name: custom-settings
               mountPath: /app/saleor/custom-settings.py

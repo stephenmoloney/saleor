@@ -19,16 +19,18 @@ service:
 ## Documentation on ingress resources
 ## https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource
 
-#ingress:
-#  enabled: false
-#  annotations: {}
-#    # kubernetes.io/ingress.class: nginx
-#    # kubernetes.io/tls-acme: "true"
-#  path: /
-#  hosts: []
-#  tls: []
-#  #  - secretName:
-#  #    hosts: []
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  path: /
+  hosts:
+    - saleor.local
+  tls:
+    - secretName: saleor-tls-example
+      hosts:
+        - saleor.local
 
 livenessProbeSettings:
   initialDelaySeconds: 90
@@ -210,6 +212,39 @@ celery:
   tolerations: []
   affinity: {}
 
+nginx:
+  serveMedia:
+    enabled: true
+  serveStatic:
+    enabled: true
+  image:
+    repository:
+    tag:
+    pullPolicy: IfNotPresent
+#    pullSecret:
+  livenessProbeSettings:
+    initialDelaySeconds: 45
+    periodSeconds: 5
+    failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbeSettings:
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 1
+  workerProcesses: 4
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ### Overrides charts/postgresql/values.yaml
 ### Corresponds to helm/charts/stable/postgresql chart.yaml v1.0.0

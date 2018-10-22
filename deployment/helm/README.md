@@ -140,19 +140,37 @@ Configurable values for the saleor deployment:
 | `ingress.annotations`           | Annotations can customize the ingress controller and are often desireable | `{}` |
 | `ingress.path`                  | Path to the saleor store front | `/` |
 | `ingress.hosts`                 | A list of host domains for the saleor application. Should be changed to the domain name of your saleor instance | `[]` |
-| `ingress.tls`                   | tls settings for saleor instance. Essential for any production instance | `[]` |
-| `ingress.tls.secretName`        | tls secret name | `[]` |
-| `ingress.tls.hosts`             | tls enabled hosts | `[]` |
-| `livenessProbeSettings.initialDelaySeconds` | initial delay before applying liveness probes | `90` |
-| `livenessProbeSettings.periodSeconds` | liveness probe period | `90` |
-| `livenessProbeSettings.failureThreshold` | liveness probe failures allowed before actually failing | `5` |
-| `livenessProbeSettings.successThreshold` | liveness probe successes before actually succeeding | `1` |
+| `ingress.tls`                   | Tls settings for saleor instance. Essential for any production instance | `[]` |
+| `ingress.tls.secretName`        | Tls secret name | `[]` |
+| `ingress.tls.hosts`             | Tls enabled hosts | `[]` |
+| `livenessProbeSettings.initialDelaySeconds` | Initial delay before applying liveness probes | `90` |
+| `livenessProbeSettings.periodSeconds` | Liveness probe period in seconds | `90` |
+| `livenessProbeSettings.failureThreshold` | Liveness probe failures allowed before actually failing | `5` |
+| `livenessProbeSettings.successThreshold` | Liveness probe successes before actually succeeding | `1` |
 | `livenessProbeSettings.timeoutSeconds` | liveness probe timeout duration | `1` |
-| `readinessProbeSettings.initialDelaySeconds` | initial delay before applying readiness probes | `30` |
-| `readinessProbeSettings.periodSeconds` | readiness probe period | `5` |
-| `readinessProbeSettings.failureThreshold` | readiness probe failures allowed before actually failing | `5` |
-| `readinessProbeSettings.successThreshold` | readiness probe successes before actually succeeding | `1` |
-| `readinessProbeSettings.timeoutSeconds` | readiness probe timeout duration | `1` |
+| `readinessProbeSettings.initialDelaySeconds` | Initial delay before applying readiness probes | `30` |
+| `readinessProbeSettings.periodSeconds` | Readiness probe period | `5` |
+| `readinessProbeSettings.failureThreshold` | Readiness probe failures allowed before actually failing | `5` |
+| `readinessProbeSettings.successThreshold` | Readiness probe successes before actually succeeding | `1` |
+| `readinessProbeSettings.timeoutSeconds` | Readiness probe timeout duration | `1` |
+| `persistence.enabled` | Enable persistence for media files | `true` |
+| `persistence.accessMode` | Persisent access mode | `ReadWriteOnce` |
+| `persistence.size` | Size of the persistence volume | `15Gi` |
+| `persistence.volumeMode` | Size of the persistence volume | `Filesystem` |
+| `persistence.persistentVolumeReclaimPolicy` | Action to take on a dynamically provisioned persistent volume when the persisten volume clain is deleted  | `Delete` |
+| `persistence.storageClass` | Set the storageClass, to disable dynamic provisioning, set to `storageClass: ""` | `nil` |
+| `persistence.existingPvc` | Use and existing persistent volume claim and do not provision using this chart | `nil` |
+| `resources.requests.cpu` | Amount of guaranteed allocated cpu resources | `200m` |
+| `resources.requests.memory` | Amount of guaranteed allocated memory resources | `256Mi` |
+| `resources.limits.cpu` | Maximum allocation of cpu resources | `1000m` |
+| `resources.limits.cpu` | Maximum allocation of memory resources | `1Gi` |
+| `nodeSelector` | Bind the pod to a specific labelled node | `{}` |
+| `tolerations` | Define node-pod scheduling preferences | `[]` |
+| `affinity` | More refined nodeSelector rules whereby other running pods and nuanced rules are taken into account | `{}` |
+| `django.alternativeConfigMap` | Use a custom-settings.py file to override/add to settings.py. If set, `custom-settings.yaml` will not be applied | `nil` |
+| `django.settingsModule` | Name of the custom settings module to amending/adding to `settings.py` | `saleor.custom-settings` |
+| `django.uwsgi.processes` | The maximum number of uwsgi processes | `2` |
+| `django.uwsgi.logging` | disable-logging = True | `saleor.custom-settings` |
 
 #### Postgresql
 

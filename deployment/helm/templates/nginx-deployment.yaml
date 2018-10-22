@@ -1,0 +1,132 @@
+---
+# TODO Introduce a conditional for /app/media when one is using S3 based storage
+{{- if or (eq .Values.nginx.serveStatic.enabled true) (eq .Values.nginx.serveMedia.enabled true) }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "saleor.fullname" . }}-nginx
+  labels:
+    app: {{ template "saleor.name" . }}
+    chart: {{ template "saleor.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.nginx.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "saleor.name" . }}-nginx
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "saleor.name" . }}-nginx
+        release: {{ .Release.Name }}
+    spec:
+      {{- if .Values.nginx.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.nginx.image.pullSecret }}
+      {{- end }}
+      volumes:
+        - name: saleor-nginx-config
+          configMap:
+            name: saleor-nginx-template
+      # TODO Introduce another conditional for when one is using S3 based storage
+      {{- if (eq .Values.nginx.serveMedia.enabled true) }}
+        - name: saleor-data-media
+          {{- if and (eq .Values.persistence.enabled true) (.Values.persistence.existingClaim) }}
+            persistentVolumeClaim:
+              claimName: {{ .Values.persistence.existingClaim }}
+          {{- else if (eq .Values.persistence.enabled true) }}
+            persistentVolumeClaim:
+              claimName: {{ default (include "saleor.fullname" .) }}
+          {{- else }}
+            emptyDir:
+              medium: Memory
+          {{- end }}
+      {{- end }}
+      {{- if (eq .Values.nginx.serveStatic.enabled true) }}
+        - name: saleor-data-static
+          {{- if and (eq .Values.persistence.enabled true) (.Values.persistence.existingClaim) }}
+            persistentVolumeClaim:
+              claimName: {{ .Values.persistence.existingClaim }}
+          {{- else if (eq .Values.persistence.enabled true) }}
+            persistentVolumeClaim:
+              claimName: {{ default (include "saleor.fullname" .) }}
+          {{- else }}
+            emptyDir:
+              medium: Memory
+          {{- end }}
+      {{- end }}
+      # TODO Introduce a conditional for /app/media when one is using S3 based storage
+      initContainers:
+        - name: {{ template "saleor.fullname" . }}-nginx-init
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["chown", "-R", "nginx:nginx", "/app/media", "/app/static"]
+          volumeMounts:
+          # TODO Introduce a conditional for /app/media when one is using S3 based storage
+          {{- if (eq .Values.nginx.serveMedia.enabled true) }}
+            - name: saleor-data-media
+              mountPath: /app/media
+              readOnly: true
+          {{- end }}
+          {{- if (eq .Values.nginx.serveStatic.enabled true) }}
+            - name: saleor-data-static
+              mountPath: /app/static
+              readOnly: true
+          {{- end }}
+          securityContext:
+            runAsUser: 0
+            privileged: true
+      containers:
+        - name: {{ template "saleor.fullname" . }}-nginx
+          image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
+          imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+{{ toYaml .Values.nginx.livenessProbeSettings | indent 10 }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+{{ toYaml .Values.nginx.readinessProbeSettings | indent 10 }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            # TODO Introduce a conditional for /app/media when one is using S3 based storage
+          {{- if (eq .Values.nginx.serveMedia.enabled true) }}
+            - name: saleor-data-media
+              mountPath: /app/media
+              readOnly: true
+          {{- end }}
+          {{- if (eq .Values.nginx.serveStatic.enabled true) }}
+            - name: saleor-data-static
+              mountPath: /app/static
+              readOnly: true
+          {{- end }}
+            - name: saleor-nginx-config
+              mountPath: /etc/nginx/conf.d/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+          resources:
+{{ toYaml .Values.nginx.resources | indent 12 }}
+    {{- with .Values.nginx.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}

@@ -1,3 +1,4 @@
+---
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "saleor.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
@@ -30,9 +31,13 @@ spec:
     - host: {{ . }}
       http:
         paths:
+          - path: {{ $ingressPath }}static
+            backend:
+              serviceName: {{ $fullName-nginx }}
+              servicePort: http
           - path: {{ $ingressPath }}
             backend:
-              serviceName: {{ $fullName }}
+              serviceName: {{ $fullName-django }}
               servicePort: http
   {{- end }}
 {{- end }}
